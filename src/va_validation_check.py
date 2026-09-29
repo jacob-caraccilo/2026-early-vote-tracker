@@ -22,10 +22,15 @@ df = pd.read_csv(csv_url)
 # the following code conducts validation testing on the new csv file to ensure
 # data quality and accuracy
 
-# checks that votes_all = accept_all + inperson_all
-votes_all_test = (df['voted_all'] == df['accept_all'] + df['inperson_all'])
+# checks that all expected columns are inside dataframe
 
-votes_all_result = votes_all_test.all()
+expected_columns = [
+    'county', 'cd', 'sdl', 'sdu', 'request_all', 'accept_all', 'inperson_all', 'voted_all', 'return_rate'
+]
+
+columns_result = all(
+    column in df.columns for column in expected_columns
+)
 
 # checks that all counties only have one row
 
@@ -38,8 +43,30 @@ unique_localities_result = not unique_localities_test
 
 complete_localities_result = (len(df) == 133)
 
+# checks that there are no missing values
+
+no_missing_values_result = not df.isna().any().any()
+
+# checks that all numeric values are nonnegative
+
+''' TO IMPLEMENT '''
+
+# checks that votes_all = accept_all + inperson_all
+votes_all_test = (df['voted_all'] == df['accept_all'] + df['inperson_all'])
+
+votes_all_result = votes_all_test.all()
+
 # checks that return_rate reflects the true returned ratio
 
-print(df['return_rate'].dtype)
+# removes extra spaces and symbols from the strings and converts to float type
+numeric_return_rate = (df['return_rate'].str.replace(
+    r"[%, ]", "", regex=True
+).astype(float) / 100).round(4)
 
+return_rate_test = (
+    numeric_return_rate 
+    == (df['accept_all'] / df['request_all']).round(4)
+)
+
+return_rate_result = return_rate_test.all()
 
